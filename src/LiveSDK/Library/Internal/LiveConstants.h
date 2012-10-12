@@ -25,9 +25,10 @@ static NSString * const LIVE_API_PARAM_SUPPRESS_REDIRECTS = @"suppress_redirects
 static NSString * const LIVE_API_PARAM_SUPPRESS_RESPONSE_CODES = @"suppress_response_codes";
 
 static NSString * const LIVE_AUTH_ACCESS_TOKEN = @"access_token";
+static NSString * const LIVE_AUTH_ACCOUNT_NAME = @"LiveSDK.OAuth";
 static NSString * const LIVE_AUTH_AUTHENTICATION_TOKEN = @"authentication_token";
-static NSString * const LIVE_AUTH_CODE = @"code";
 static NSString * const LIVE_AUTH_CLIENTID = @"client_id";
+static NSString * const LIVE_AUTH_CODE = @"code";
 static NSString * const LIVE_AUTH_DISPLAY = @"display";
 static NSString * const LIVE_AUTH_DISPLAY_IOS_PHONE = @"ios_phone";
 static NSString * const LIVE_AUTH_DISPLAY_IOS_TABLET = @"ios_tablet";
@@ -44,6 +45,9 @@ static NSString * const LIVE_AUTH_TOKEN = @"token";
 
 static NSString * const LIVE_AUTH_POST_CONTENT_TYPE = @"application/x-www-form-urlencoded;charset=UTF-8";
 static NSString * const LIVE_AUTH_EXPIRES_IN = @"expires_in";
+
+static const NSInteger LIVE_ERROR_AUTH_BAD_ARGUMENTS = -1;
+static NSString * const LIVE_ERROR_AUTH_DOMAIN = @"LiveAuthErrorDomain";
 
 static const NSInteger LIVE_ERROR_CODE_LOGIN_FAILED = 1;
 static const NSInteger LIVE_ERROR_CODE_LOGIN_CANCELED = 2;
