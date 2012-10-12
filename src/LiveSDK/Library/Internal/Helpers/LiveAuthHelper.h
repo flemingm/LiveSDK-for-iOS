@@ -57,4 +57,8 @@
 + (void) overrideLoginServer:(NSString *)loginServer
                    apiServer:(NSString *)apiServer;
 
++ (NSDictionary *) dictionaryWithResponseString:(NSString *)responseStr;
+
++ (NSString *) encodedQueryParametersForDictionary:(NSDictionary *)dict;
+
 @end

@@ -254,4 +254,78 @@ NSString * LIVE_ENDPOINT_LOGIN_HOST = @"login.live.com";
     LIVE_ENDPOINT_API_HOST = apiServer;
 }
 
++ (NSString *) unencodedOAuthParameterForString:(NSString *)str {
+    NSString *plainStr = [str stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+    return plainStr;
+}
+
++ (NSDictionary *) dictionaryWithResponseString:(NSString *)responseStr {
+    // Build a dictionary from a response string of the form
+    // "cat=fluffy&dog=spot".  Missing or empty values are considered
+    // empty strings; keys and values are percent-decoded.
+    if (responseStr == nil) return nil;
+
+    NSArray *items = [responseStr componentsSeparatedByString:@"&"];
+
+    NSMutableDictionary *responseDict = [NSMutableDictionary dictionaryWithCapacity:[items count]];
+
+    for (NSString *item in items) {
+        NSString *key = nil;
+        NSString *value = @"";
+
+        NSRange equalsRange = [item rangeOfString:@"="];
+        if (equalsRange.location != NSNotFound) {
+            // The parameter has at least one '='
+            key = [item substringToIndex:equalsRange.location];
+
+            // There are characters after the '='
+            value = [item substringFromIndex:(equalsRange.location + 1)];
+        } else {
+            // The parameter has no '='
+            key = item;
+        }
+
+        NSString *plainKey = [[self class] unencodedOAuthParameterForString:key];
+        NSString *plainValue = [[self class] unencodedOAuthParameterForString:value];
+        
+        [responseDict setObject:plainValue forKey:plainKey];
+    }
+    
+    return responseDict;
+}
+
++ (NSString *) encodedOAuthValueForString:(NSString *)str {
+    CFStringRef originalString = (CFStringRef) str;
+    CFStringRef leaveUnescaped = NULL;
+    CFStringRef forceEscaped =  CFSTR("!*'();:@&=+$,/?%#[]");
+
+    CFStringRef escapedStr = NULL;
+    if (str) {
+        escapedStr = CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault,
+                                                             originalString,
+                                                             leaveUnescaped,
+                                                             forceEscaped,
+                                                             kCFStringEncodingUTF8);
+        [(id)CFMakeCollectable(escapedStr) autorelease];
+    }
+    
+    return (NSString *)escapedStr;
+}
+
++ (NSString *) encodedQueryParametersForDictionary:(NSDictionary *)dict {
+    // Make a string like "cat=fluffy@dog=spot"
+    NSMutableString *result = [NSMutableString string];
+    NSArray *sortedKeys = [[dict allKeys] sortedArrayUsingSelector:@selector(caseInsensitiveCompare:)];
+    NSString *joiner = @"";
+    for (NSString *key in sortedKeys) {
+        NSString *value = [dict objectForKey:key];
+        NSString *encodedValue = [self encodedOAuthValueForString:value];
+        NSString *encodedKey = [self encodedOAuthValueForString:key];
+        [result appendFormat:@"%@%@=%@", joiner, encodedKey, encodedValue];
+        joiner = @"&";
+    }
+    return result;
+}
+
+
 @end
