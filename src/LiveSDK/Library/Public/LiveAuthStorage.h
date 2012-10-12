@@ -13,11 +13,15 @@
 @interface LiveAuthStorage : NSObject
 {
 @private
-    NSString *_filePath;
     NSString *_clientId;
+    NSString *_refreshToken;
 }
 
 @property (nonatomic, retain) NSString *refreshToken;
+
++ (NSString *) keychainItemName;
+
++ (void) setKeychainItemName:(NSString *)keychainItemName;
 
 - (id) initWithClientId:(NSString *)clientId;
 
