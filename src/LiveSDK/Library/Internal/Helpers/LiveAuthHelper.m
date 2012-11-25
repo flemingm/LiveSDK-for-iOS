@@ -24,6 +24,8 @@ NSString * LIVE_ENDPOINT_LOGIN_HOST = @"login.live.com";
     return (sdkPath)? [NSBundle bundleWithPath:sdkPath] : [NSBundle mainBundle];
 }
 
+#if (!TARGET_OS_MAC )
+// ios speific
 + (UIImage *) getBackButtonImage
 {
     NSString * path = [[NSBundle mainBundle] pathForResource:@"LiveSDK.framework/Resources/backArrow_black"
@@ -36,6 +38,15 @@ NSString * LIVE_ENDPOINT_LOGIN_HOST = @"login.live.com";
         return [UIImage imageNamed:@"backArrow_black"];
     }
 }
+#else
+
+// Mac OS X speific
++ (NSImage *) getBackButtonImage
+{
+
+        return [NSImage imageNamed:@"backArrow_black"];
+}
+#endif
 
 + (NSArray *) normalizeScopes:(NSArray *)scopes
 {
@@ -58,10 +69,13 @@ NSString * LIVE_ENDPOINT_LOGIN_HOST = @"login.live.com";
     return [[NSSet setWithArray:scopes1] isSubsetOfSet:[NSSet setWithArray:scopes2]];
 }
 
+#if (!TARGET_OS_MAC )
+// ios speific
 + (BOOL) isiPad
 {
     return [[[UIDevice currentDevice] model] hasPrefix:@"iPad"];
 }
+#endif
 
 + (NSString *) getAuthorizeUrl
 {
@@ -80,7 +94,14 @@ NSString * LIVE_ENDPOINT_LOGIN_HOST = @"login.live.com";
 
 + (NSString *) getAuthDisplayValue
 {
+#if (!TARGET_OS_MAC )
+    // ios speific
     return [LiveAuthHelper isiPad] ? LIVE_AUTH_DISPLAY_IOS_TABLET : LIVE_AUTH_DISPLAY_IOS_PHONE;
+#else
+    return LIVE_AUTH_DISPLAY_IOS_TABLET;
+
+#endif
+    
 }
 
 + (NSURL *) buildAuthUrlWithClientId:(NSString *)clientId

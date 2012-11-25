@@ -42,10 +42,19 @@
                delegate:(id<LiveAuthDelegate>)delegate
               userState:(id)userState;
 
+#if (!TARGET_OS_MAC )
+// ios specific
 - (void) login:(UIViewController *)currentViewController
         scopes:(NSArray *)scopes
       delegate:(id<LiveAuthDelegate>)delegate
      userState:(id)userState;
+#else
+// Mac OS X specific
+- (void) login:(NSViewController *)currentViewController
+        scopes:(NSArray *)scopes
+      delegate:(id<LiveAuthDelegate>)delegate
+     userState:(id)userState;
+#endif
 
 - (void) logoutWithDelegate:(id<LiveAuthDelegate>)delegate
                   userState:(id)userState;

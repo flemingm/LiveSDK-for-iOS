@@ -135,10 +135,22 @@ static NSString *sLiveKeychainItemName;
 
     NSString *password = [liveAuthStorage persistenceResponseString];
 
+#if (TARGET_OS_MAC && !(TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE))
+    
+    LiveOAuthKeychain *keychain = [LiveOAuthKeychain defaultKeychain];
+    
+    [keychain setPassword:password
+               forService:keychainItemName
+            accessibility:accessibility
+                  account:LIVE_AUTH_ACCOUNT_NAME
+                    error:nil];
+    
+#else
     if (accessibility == NULL
         && &kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly != NULL) {
         accessibility = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly;
     }
+ 
 
     LiveOAuthKeychain *keychain = [LiveOAuthKeychain defaultKeychain];
     [keychain setPassword:password
@@ -146,6 +158,7 @@ static NSString *sLiveKeychainItemName;
             accessibility:accessibility
                   account:LIVE_AUTH_ACCOUNT_NAME
                     error:nil];
+#endif
 }
 
 - (void) setKeysForResponseString:(NSString *)str

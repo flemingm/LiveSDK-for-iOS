@@ -25,6 +25,8 @@ currentViewController = _currentViewController,
       tokenConnection = _tokenConnection,
     tokenResponseData = _tokenResponseData;
 
+#if (!TARGET_OS_MAC )
+// ios specific
 - (id) initWithClient:(LiveConnectClientCore *)client
                scopes:(NSArray *)scopes
 currentViewController:(UIViewController *)currentViewController
@@ -44,6 +46,28 @@ currentViewController:(UIViewController *)currentViewController
     
     return self; 
 }
+#else
+// Mac OS X specific
+- (id) initWithClient:(LiveConnectClientCore *)client
+               scopes:(NSArray *)scopes
+currentViewController:(NSViewController *)currentViewController
+             delegate:(id<LiveAuthDelegate>)delegate
+            userState:(id)userState
+{
+    self = [super init];
+    if (self)
+    {
+        _client = [client retain];
+        _scopes = [scopes copy];
+        _currentViewController = [currentViewController retain];
+        _delegate = delegate;
+        _userState = [userState retain];
+        _status = AuthNotStarted;
+    }
+    
+    return self;
+}
+#endif
 
 - (void)dealloc
 {    
@@ -105,6 +129,8 @@ currentViewController:(UIViewController *)currentViewController
     }
 }
 
+#if (!TARGET_OS_MAC )
+// ios specific
 - (void)dismissModal
 {
     if (self.currentViewController) 
@@ -128,6 +154,20 @@ currentViewController:(UIViewController *)currentViewController
     [self dismissModal];
     [self updateStatus:AuthCompleted];
 }
+#else
+
+#warning MAC OS X to implementation
+
+
+
+- (void)complete
+{
+ //   [self dismissModal];
+    [self updateStatus:AuthCompleted];
+}
+
+#endif
+
 
 - (void)process
 {
@@ -148,6 +188,8 @@ currentViewController:(UIViewController *)currentViewController
     }
 }
 
+#if (!TARGET_OS_MAC )
+// ios specific
 - (void)authorize
 {
     NSURL *authRequestUrl = [LiveAuthHelper buildAuthUrlWithClientId:_client.clientId 
@@ -169,6 +211,24 @@ currentViewController:(UIViewController *)currentViewController
     [self.currentViewController presentModalViewController:modalDialog 
                                                   animated:YES];
 }
+#else
+// ios specific
+- (void)authorize
+{
+    NSURL *authRequestUrl = [LiveAuthHelper buildAuthUrlWithClientId:_client.clientId
+                                                         redirectUri:[LiveAuthHelper getDefaultRedirectUrlString]
+                                                              scopes:_scopes];
+        NSString *nibName = @"LiveAuthDialog_MACOSX";
+    
+    _authViewController = [[LiveAuthDialog alloc] initWithNibName:nibName
+                                                           bundle:[LiveAuthHelper getSDKBundle]
+                                                         startUrl:authRequestUrl
+                                                           endUrl:[LiveAuthHelper getDefaultRedirectUrlString]
+                                                         delegate:self];
+    
+
+}
+#endif
 
 - (void)retrieveToken
 {

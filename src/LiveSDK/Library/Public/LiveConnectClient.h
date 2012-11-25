@@ -81,7 +81,8 @@
 //           method has a scope value, the call will receive an exception.  
 // - userState: Optional. An object that is used to track asynchronous state. The userState object will be 
 //           passed as userState parameter when any LiveAuthDelegate protocol method is invoked.
-
+#if (!TARGET_OS_MAC)
+// ios specific
 - (void) login:(UIViewController *)currentViewController
       delegate:(id<LiveAuthDelegate>)delegate;
 
@@ -97,6 +98,25 @@
         scopes:(NSArray *)scopes
       delegate:(id<LiveAuthDelegate>)delegate
      userState:(id)userState;
+#else
+// Mac OS X Specific
+
+- (void) login:(NSViewController *)currentViewController
+      delegate:(id<LiveAuthDelegate>)delegate;
+
+- (void) login:(NSViewController *)currentViewController
+      delegate:(id<LiveAuthDelegate>)delegate
+     userState:(id)userState;
+
+- (void) login:(NSViewController *)currentViewController
+        scopes:(NSArray *)scopes
+      delegate:(id<LiveAuthDelegate>)delegate;
+
+- (void) login:(NSViewController *)currentViewController
+        scopes:(NSArray *)scopes
+      delegate:(id<LiveAuthDelegate>)delegate
+     userState:(id)userState;
+#endif
 
 #pragma mark - logout* methods
 

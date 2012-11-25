@@ -57,6 +57,8 @@
 
 #pragma mark Auth methods
 
+#if (!TARGET_OS_MAC )
+// ios specific
 - (void) login:(UIViewController *)currentViewController 
         scopes:(NSArray *)scopes 
       delegate:(id<LiveAuthDelegate>)delegate
@@ -81,6 +83,35 @@
     
     [authRequest execute]; 
 }
+
+#else
+
+// Mac OS X Specific
+- (void) login:(NSViewController *)currentViewController
+        scopes:(NSArray *)scopes
+      delegate:(id<LiveAuthDelegate>)delegate
+     userState:(id)userState
+{
+    if (self.session &&
+        [LiveAuthHelper isScopes:scopes subSetOf:self.session.scopes])
+    {
+        NSArray *authCompletedEvent = [NSArray arrayWithObjects:delegate, userState, nil];
+        [self performSelector:@selector(sendAuthCompletedMessage:) withObject:authCompletedEvent afterDelay:0.1];
+        return;
+    }
+    
+    LiveAuthRequest *authRequest = [[[LiveAuthRequest alloc] initWithClient:self
+                                                                     scopes:scopes
+                                                      currentViewController:currentViewController
+                                                                   delegate:delegate
+                                                                  userState:userState]
+                                    autorelease];
+    
+    self.authRequest = authRequest;
+    
+    [authRequest execute];
+}
+#endif
 
 - (BOOL) hasPendingUIRequest
 {

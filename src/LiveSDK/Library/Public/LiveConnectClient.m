@@ -157,6 +157,8 @@
     return _liveClientCore.session;
 }
 
+#if (!TARGET_OS_MAC)
+// ios specific
 - (void) login:(UIViewController *) currentViewController
       delegate:(id<LiveAuthDelegate>) delegate
 {
@@ -213,6 +215,67 @@
                   delegate:delegate 
                  userState:userState];
 }
+#else
+// Mac OS X Specific
+
+- (void) login:(NSViewController *) currentViewController
+      delegate:(id<LiveAuthDelegate>) delegate
+{
+    [self login:currentViewController delegate:delegate userState:nil];
+}
+
+- (void) login:(NSViewController *) currentViewController
+      delegate:(id<LiveAuthDelegate>) delegate
+     userState:(id) userState
+{
+    [self login:currentViewController scopes:nil delegate:delegate userState:userState];
+}
+
+- (void) login:(NSViewController *) currentViewController
+        scopes:(NSArray *) scopes
+      delegate:(id<LiveAuthDelegate>) delegate
+{
+    [self login:currentViewController scopes:scopes delegate:delegate userState:nil];
+}
+
+- (void) login:(NSViewController *) currentViewController
+        scopes:(NSArray *) scopes
+      delegate:(id<LiveAuthDelegate>) delegate
+     userState:(id) userState
+{
+    [self validateInit];
+    
+    if (_liveClientCore.hasPendingUIRequest)
+    {
+        [NSException raise:LIVE_EXCEPTION format:LIVE_ERROR_DESC_PENDING_LOGIN_EXIST];
+    }
+    
+    if (currentViewController == nil)
+    {
+        [NSException raise:NSInvalidArgumentException
+                    format:LIVE_ERROR_DESC_MISSING_PARAMETER, @"currentViewController", @"login:scopes:delegate:userState:"];
+    }
+    
+    scopes = [LiveAuthHelper normalizeScopes:scopes];
+    if (scopes.count == 0)
+    {
+        // scopes is not provided, then use the default scopes.
+        scopes = _liveClientCore.scopes;
+        if (scopes.count == 0)
+        {
+            // Neither init nor login has scopes, raise error.
+            [NSException raise:NSInvalidArgumentException
+                        format:LIVE_ERROR_DESC_MISSING_PARAMETER, @"scopes", @"login:scopes:delegate:userState:"];
+        }
+    }
+    
+    [_liveClientCore login:currentViewController
+                    scopes:scopes
+                  delegate:delegate
+                 userState:userState];
+}
+#endif
+
 
 - (void) logout
 {

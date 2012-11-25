@@ -40,6 +40,8 @@
     [super dealloc];
 }
 
+#if (!TARGET_OS_MAC )
+// ios speific
 - (void)didReceiveMemoryWarning
 {
     // Releases the view if it doesn't have a superview.
@@ -47,6 +49,7 @@
     
     // Release any cached data, images, etc that aren't in use.
 }
+
 
 #pragma mark - View lifecycle
 
@@ -100,17 +103,17 @@
     [_delegate authDialogDisappeared];
 }
 
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
-{
-    // We only rotate for iPad.
-    return ([LiveAuthHelper isiPad] || 
-            interfaceOrientation == UIInterfaceOrientationPortrait);
-}
-
 // User clicked the "Cancel" button.
 - (void) dismissView:(id)sender 
 {
     [_delegate authDialogCanceled];
+}
+
+- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
+{
+    // We only rotate for iPad.
+    return ([LiveAuthHelper isiPad] ||
+            interfaceOrientation == UIInterfaceOrientationPortrait);
 }
 
 #pragma mark UIWebViewDelegate methods
@@ -133,7 +136,7 @@
 {
 }
 
-- (void)webView:(UIWebView *)webView didFailLoadWithError:(NSError *)error 
+- (void)webView:(UIWebView *)webView didFailLoadWithError:(NSError *)error
 {
     // Ignore the error triggered by page reload
     if ([error.domain isEqualToString:@"NSURLErrorDomain"] && error.code == -999)
@@ -151,5 +154,103 @@
 {
     
 }
+#else
+
+// ///////////// Mac OS X...  ///////////// 
+
+#pragma mark -
+
+- (void)webView:(WebView *)sender didStartProvisionalLoadForFrame:(WebFrame *)frame
+{
+	// Only report feedback for the main frame.
+	if (frame == [sender mainFrame]){
+	//		NSString *url = [[[[frame provisionalDataSource] request] URL] absoluteString];
+	//		[lblStatus setStringValue:url];
+		
+	}
+}
+
+- (void)webView:(WebView *)sender didReceiveTitle:(NSString *)title forFrame:(WebFrame *)frame
+{
+	// Report feedback only for the main frame.
+	if (frame == [sender mainFrame]){
+		[[sender window] setTitle:title];
+	}
+}
+
+-(void)webView:(WebView *)sender resource:(id)identifier
+didFailLoadingWithError:(NSError *)error
+fromDataSource:(WebDataSource *)dataSource
+{
+	NSLog(@"webView: didFailLoadingWithError %@", error);
+//	[lblStatus setStringValue:[NSString stringWithFormat:@"%@ - %@",[error localizedDescription], [error localizedFailureReason]]];
+}
+
+- (void)webView:(WebView *)webView didFailLoadWithError:(NSError *)error {
+    
+    if(error != nil)
+	{
+        NSLog(@"webView didFailLoadWithError: %@", error);
+        
+        // Ignore the error triggered by page reload
+        if ([error.domain isEqualToString:@"NSURLErrorDomain"] && error.code == -999)
+            return;
+        
+        // Ignore the error triggered by disposing the view.
+        if ([error.domain isEqualToString:@"WebKitErrorDomain"] && error.code == 102)
+            return;
+        
+        [_delegate authDialogFailedWithError:error];
+    
+		
+	}
+}
+
+#if 0
+- (void) ParseRedirectUri:(NSString *) fragment
+{
+	NSRange accessTokenBegin = [fragment rangeOfString:@"access_token="];
+	NSRange accessTokenEnd = [fragment rangeOfString:@"&"];
+	NSString *accessToken = [fragment substringToIndex:accessTokenEnd.location];
+	accessToken = [accessToken substringFromIndex:(accessTokenBegin.location+accessTokenBegin.length)];
+    
+	NSNotificationCenter *note = [NSNotificationCenter defaultCenter];
+	[note postNotificationName:_liveNotificationAccessToken object:accessToken];
+}
+#endif
+
+// called for each object on the page .. look for our special URL to get token.
+-(void)webView:(WebView *)sender resource:(id)identifier
+didFinishLoadingFromDataSource:(WebDataSource *)dataSource
+{
+	
+#if 1
+    NSURLRequest *request = [dataSource request];
+    NSURL *url = [request URL];
+    
+    if ([[url absoluteString] hasPrefix: _endUrl])
+    {
+        [_delegate authDialogCompletedWithResponse:url];
+   //     return NO;
+    }
+    
+   // return YES;
+
+#else
+    NSURLRequest *currentRequest = [dataSource request];
+	NSURL *currentURL = [currentRequest URL];
+	NSString *absoluteURL = [currentURL absoluteString];
+    
+	if (0) NSLog(@"didFinishLoadingFromDataSource %@", absoluteURL);
+	bool match = [absoluteURL hasPrefix:_liveRedirectURI];
+	if (match) {
+		if (debugLog) NSLog(@"match didFinishLoadingFromDataSource %@", absoluteURL);
+		[self ParseRedirectUri:[currentURL fragment]];
+	}
+#endif
+}
+
+
+#endif
 
 @end

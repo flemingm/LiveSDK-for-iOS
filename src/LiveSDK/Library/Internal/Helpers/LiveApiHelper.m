@@ -65,11 +65,21 @@
 
 + (NSString *) getXHTTPLiveLibraryHeaderValue
 {
+#if (!TARGET_OS_MAC )
+    // ios specific
     return [NSString stringWithFormat:
                 @"iOS/%@%@_%@",
                 [LiveAuthHelper isiPad]? @"iPad" : @"iPhone",
                 [[UIDevice currentDevice] systemVersion], 
-                LIVE_SDK_VERSION]; 
+                LIVE_SDK_VERSION];
+#else
+  
+    // ios specific
+    return [NSString stringWithFormat:
+            @"OSX/mac10_%@",
+           LIVE_SDK_VERSION];
+#endif
+    
 }
 
 + (BOOL) isFilePath: (NSString *)path

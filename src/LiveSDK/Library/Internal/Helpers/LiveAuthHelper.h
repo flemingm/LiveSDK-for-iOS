@@ -12,7 +12,11 @@
 
 + (NSBundle *) getSDKBundle;
 
+#if (TARGET_OS_MAC && !(TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE))
++ (NSImage *) getBackButtonImage;
+#else
 + (UIImage *) getBackButtonImage;
+#endif
 
 + (NSArray *) normalizeScopes:(NSArray *)scopes;
 
@@ -45,7 +49,10 @@
 
 + (NSString *) getDefaultRedirectUrlString;
 
+#if (!TARGET_OS_MAC )
+// ios speific
 + (BOOL) isiPad;
+#endif
 
 + (id) readAuthResponse:(NSData *)data;
 

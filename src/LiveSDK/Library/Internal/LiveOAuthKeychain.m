@@ -100,11 +100,14 @@ static LiveOAuthKeychain *sLiveOAuthKeychain;
             NSMutableDictionary *keychainQuery = [self keychainQueryForService:service account:account];
             NSData *passwordData = [password dataUsingEncoding:NSUTF8StringEncoding];
             [keychainQuery setObject:passwordData forKey:(id)kSecValueData];
-
+            
+#if (!TARGET_OS_MAC )
+            // ios speific
             if (accessibility != NULL && &kSecAttrAccessible != NULL) {
                 [keychainQuery setObject:(id)accessibility
                                   forKey:(id)kSecAttrAccessible];
             }
+#endif
             status = SecItemAdd((CFDictionaryRef)keychainQuery, NULL);
         }
     }
